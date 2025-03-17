@@ -180,11 +180,10 @@ register_shutdown_function(
         );
 
         try {
-
-            error_log(json_encode($data),3,'/var/xhprof/log/xhprof.log');
+            // error_log(json_encode($data),3,'/var/xhprof/log/xhprof.log');
 
             $result = $saverHandler($data);
-            hLog("saver result: ".json_encode($result));
+           // hLog("saver result: ".json_encode($result));
         } catch (Exception $e) {
             hLog('xhgui - ' . $e->getMessage());
         }
