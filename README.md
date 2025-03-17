@@ -8,7 +8,7 @@
     docker-compose up -d
 
 ### xhGui服务端地址(默认地址，无须变动)
-    - XHGUI_CONFIG_SAVER_URL=http://192.168.55.25:8143/run/import
+    - XHGUI_CONFIG_SAVER_URL=http://47.98.45.200:8142/run/import
 
 
 ## CLI
