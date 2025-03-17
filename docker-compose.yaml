@@ -1,0 +1,26 @@
+services:
+  fpm:
+    container_name: zw-xhgui
+    image: registry.us-east-1.aliyuncs.com/zwwlpub/public:php-fpm73-test-v3-xhprof
+    environment:
+      - APP_ENV=develop
+      - XHGUI_CONFIG_DEBUG=0
+      - XHGUI_CONFIG_SHOULD_RUN=1
+      - XHGUI_CONFIG_EXTENSION=tideways_xhprof
+      - XHGUI_CONFIG_PERCENT=100
+      - XHGUI_CONFIG_SAVER_URL=http://47.98.45.200:8142/run/import # xhGui服务端代码
+
+    volumes:
+      - ./etc/nginx:/etc/nginx/conf.d
+      - ./xhprof:/var/xhprof
+      - /Volumes/work/code/php/zhangwan/zhangshi:/var/www # 项目代码 需要修改
+    restart: always
+    ports:
+      - "8082:80"
+      - "8083:8083"
+    networks:
+      - my-network  # 使用外部网络
+networks:
+  my-network:
+    driver: bridge  # 使用 bridge 网络模式
+
