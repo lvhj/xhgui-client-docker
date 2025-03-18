@@ -195,7 +195,7 @@ register_shutdown_function(
         $requestTsMicro = array('sec' => $requestTimeFloat[0], 'usec' => $requestTimeFloat[1]);
 
         // 修改server_name
-        $_SERVER['SERVER_NAME'] = getenv('XHGUI_CLIENT_NAME') . '' . $_SERVER['SERVER_NAME'];
+        $_SERVER['SERVER_NAME'] = !empty(getenv('XHGUI_CLIENT_NAME')) ? getenv('XHGUI_CLIENT_NAME') : $_SERVER['SERVER_NAME'];
         $data['meta'] = array(
             'url' => $uri,
             'SERVER' => $_SERVER,
