@@ -8,6 +8,7 @@ services:
       - XHGUI_CONFIG_SHOULD_RUN=1
       - XHGUI_CONFIG_EXTENSION=tideways_xhprof
       - XHGUI_CONFIG_PERCENT=100
+      - XHGUI_CONFIG_MODE=1
       - XHGUI_CONFIG_SAVER_URL=http://47.98.45.200:8142/run/import # xhGui服务端代码
 
     volumes:

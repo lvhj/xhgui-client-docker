@@ -1,40 +1,68 @@
 <?php
 
-function hConfig($key){
-    return getenv($key,'');
+function hConfig($key)
+{
+    return getenv($key, '');
 //    return isset($_SERVER[$key])?$_SERVER[$key]:'';
 }
-function hLog($content){
+
+function hLog($content)
+{
     global $is_debug;
-    if(true){
-        error_log($content,3,'/var/xhprof/log/error.log');
+    if (true) {
+        error_log($content . PHP_EOL, 3, '/var/xhprof/log/error.log');
     }
 }
+
 $is_debug = hConfig('XHGUI_CONFIG_DEBUG');
-if($is_debug)
-{
-    ini_set('display_errors',1);
+if ($is_debug) {
+    ini_set('display_errors', 1);
 }
 if (!hConfig('XHGUI_CONFIG_SHOULD_RUN')) {
-    hLog('xhgui 关闭状态，不采集！ ' );
+    hLog('xhgui 关闭状态，不采集！ ');
     return;
 }
 
 $extension = hConfig('XHGUI_CONFIG_EXTENSION');
-if(!$extension){
-    hLog('xhgui 环境初始化错误，没有设置要使用的扩展！ ' );
+if (!$extension) {
+    hLog('xhgui 环境初始化错误，没有设置要使用的扩展！ ');
     return;
 }
 $percent = hConfig('XHGUI_CONFIG_PERCENT');
 $xhMode = hConfig('XHGUI_CONFIG_MODE');
-// 配置百分比时为70时,
-if( rand(1,100) > $percent && $xhMode == 1 ){
-    hLog('xhgui 百分比采集忽略！ ' );
-    return;
+
+/**
+ * header采集
+ *
+ * @return bool
+ */
+function headerCollect()
+{
+    $headerKey = 'HTTP_X_COLLECT'; // 在 $_SERVER 中，Header 名称需转换格式
+    return isset($_SERVER[$headerKey]) && strtolower($_SERVER[$headerKey]) == 'true';
 }
-if($xhMode == 2){
+
+/**
+ * 百分百采集
+ * @return bool
+ */
+function percentCollect($percent)
+{
+    return rand(1, 100) > 0;
+}
+
+if ($xhMode == 1) {
+    // 是否拦截采集
+    if (!headerCollect() && percentCollect($percent)) {
+        //hLog('xhgui 百分比采集忽略！ ');
+        return;
+    }
+}
+
+
+if ($xhMode == 2) {
     $enblaeXhprof = isset($_REQUEST['_xhprof']) || isset($_COOKIE['_xhprof']);
-    if(!$enblaeXhprof){
+    if (!$enblaeXhprof) {
         return;
     }
 }
@@ -45,50 +73,47 @@ if (!extension_loaded('xhprof') && !extension_loaded('uprofiler') && !extension_
 }
 
 $dir = dirname(__DIR__);
-$simpleUrlProcess = function_exists("_XhguiHeader_SimpleUrl") ? function($data) {
+$simpleUrlProcess = function_exists("_XhguiHeader_SimpleUrl") ? function ($data) {
     return call_user_func('_XhguiHeader_SimpleUrl', $data);
-} : function($url){
+} : function ($url) {
     return preg_replace('/\=\d+/', '', $url);
 };
 
 /**
  * @var $saverHander callable()
  */
-$saverHandler = function_exists("_XhguiHeader_Saver") ?  function($data) {
+$saverHandler = function_exists("_XhguiHeader_Saver") ? function ($data) {
     return call_user_func('_XhguiHeader_Saver', $data);
-} : function($data){
-    $saveUrl =  hConfig('XHGUI_CONFIG_SAVER_URL');
-    $timeout =  hConfig('XHGUI_CONFIG_SAVER_URL_TIME_OUT');
-    if($saveUrl){
+} : function ($data) {
+    $saveUrl = hConfig('XHGUI_CONFIG_SAVER_URL');
+    $timeout = hConfig('XHGUI_CONFIG_SAVER_URL_TIME_OUT');
+    if ($saveUrl) {
         $options = array(
             'http' => array(
-                'header'  => "Content-type: application/json",
-                'method'  => 'POST',
-                'content' => json_encode($data,true),
+                'header' => "Content-type: application/json",
+                'method' => 'POST',
+                'content' => json_encode($data, true),
                 // 'content' => json_encode(['dd'=>1]),
-                'timeout' => $timeout?$timeout:4,
+                'timeout' => $timeout ? $timeout : 4,
             ),
         );
-        $context  = stream_context_create($options);
+        $context = stream_context_create($options);
         $result = file_get_contents($saveUrl, false, $context);
         if ($result === false) {
             return [];
         }
         return json_decode($result, true);
-    }else{
-        hLog('xhgui 没有配置采集地址，请配置环境变量 ' );
+    } else {
+        hLog('xhgui 没有配置采集地址，请配置环境变量 ');
     }
 
 };
 
 
-
-$filterPath = hConfig('XHGUI_CONFIG_FILTER_PATH')?explode(',',hConfig('XHGUI_CONFIG_FILTER_PATH')):[];
-if(is_array($filterPath)&&in_array($_SERVER['DOCUMENT_ROOT'],$filterPath)){
+$filterPath = hConfig('XHGUI_CONFIG_FILTER_PATH') ? explode(',', hConfig('XHGUI_CONFIG_FILTER_PATH')) : [];
+if (is_array($filterPath) && in_array($_SERVER['DOCUMENT_ROOT'], $filterPath)) {
     return;
 }
-
-
 
 
 if (!isset($_SERVER['REQUEST_TIME_FLOAT'])) {
@@ -103,20 +128,20 @@ if ($extension == 'uprofiler' && extension_loaded('uprofiler')) {
 } else if ($extension == 'tideways' && extension_loaded('tideways')) {
     tideways_enable(TIDEWAYS_FLAGS_CPU | TIDEWAYS_FLAGS_MEMORY);
     tideways_span_create('sql');
-} else if(function_exists('xhprof_enable')){
+} else if (function_exists('xhprof_enable')) {
     if (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION > 4) {
         xhprof_enable(XHPROF_FLAGS_CPU | XHPROF_FLAGS_MEMORY | XHPROF_FLAGS_NO_BUILTINS);
     } else {
         xhprof_enable(XHPROF_FLAGS_CPU | XHPROF_FLAGS_MEMORY);
     }
-}else{
-    hLog('xhgui 你指定扩展不支持！ ' );
+} else {
+    hLog('xhgui 你指定扩展不支持！ ');
     return;
 }
 
 register_shutdown_function(
-    function () use($simpleUrlProcess,$saverHandler){
-        $extension =  hConfig('XHGUI_CONFIG_EXTENSION');
+    function () use ($simpleUrlProcess, $saverHandler) {
+        $extension = hConfig('XHGUI_CONFIG_EXTENSION');
         if ($extension == 'uprofiler' && extension_loaded('uprofiler')) {
             $data['profile'] = uprofiler_disable();
         } else if ($extension == 'tideways_xhprof' && extension_loaded('tideways_xhprof')) {
@@ -125,11 +150,11 @@ register_shutdown_function(
             $data['profile'] = tideways_disable();
             $sqlData = tideways_get_spans();
             $data['sql'] = array();
-            if(isset($sqlData[1])){
-                foreach($sqlData as $val){
-                    if(isset($val['n'])&&$val['n'] === 'sql'&&isset($val['a'])&&isset($val['a']['sql'])){
-                        $_time_tmp = (isset($val['b'][0])&&isset($val['e'][0]))?($val['e'][0]-$val['b'][0]):0;
-                        if(!empty($val['a']['sql'])){
+            if (isset($sqlData[1])) {
+                foreach ($sqlData as $val) {
+                    if (isset($val['n']) && $val['n'] === 'sql' && isset($val['a']) && isset($val['a']['sql'])) {
+                        $_time_tmp = (isset($val['b'][0]) && isset($val['e'][0])) ? ($val['e'][0] - $val['b'][0]) : 0;
+                        if (!empty($val['a']['sql'])) {
                             $data['sql'][] = [
                                 'time' => $_time_tmp,
                                 'sql' => $val['a']['sql']
@@ -183,7 +208,7 @@ register_shutdown_function(
             // error_log(json_encode($data),3,'/var/xhprof/log/xhprof.log');
 
             $result = $saverHandler($data);
-           // hLog("saver result: ".json_encode($result));
+            // hLog("saver result: ".json_encode($result));
         } catch (Exception $e) {
             hLog('xhgui - ' . $e->getMessage());
         }
