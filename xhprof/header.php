@@ -48,7 +48,7 @@ function headerCollect()
  */
 function percentCollect($percent)
 {
-    return rand(1, 100) > 0;
+    return rand(1, 100) > $percent;
 }
 
 if ($xhMode == 1) {
