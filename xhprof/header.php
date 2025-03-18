@@ -10,7 +10,7 @@ function hLog($content)
 {
     global $is_debug;
     if (true) {
-        error_log($content . PHP_EOL, 3, '/var/xhprof/log/error.log');
+        error_log(date('Y-m-d H:i:s') . ' - ' . $content . PHP_EOL, 3, '/var/xhprof/log/error.log');
     }
 }
 
@@ -85,7 +85,7 @@ $simpleUrlProcess = function_exists("_XhguiHeader_SimpleUrl") ? function ($data)
 $saverHandler = function_exists("_XhguiHeader_Saver") ? function ($data) {
     return call_user_func('_XhguiHeader_Saver', $data);
 } : function ($data) {
-    $saveUrl = hConfig('XHGUI_CONFIG_SAVER_URL');
+    $saveUrl = hConfig('XHGUI_CONFIG_SAVER_URL') . '?token=' . hConfig('XHGUI_UPLOAD_TOKEN');
     $timeout = hConfig('XHGUI_CONFIG_SAVER_URL_TIME_OUT');
     if ($saveUrl) {
         $options = array(
@@ -193,6 +193,9 @@ register_shutdown_function(
 
         $requestTs = array('sec' => $time, 'usec' => 0);
         $requestTsMicro = array('sec' => $requestTimeFloat[0], 'usec' => $requestTimeFloat[1]);
+
+        // 修改server_name
+        $_SERVER['SERVER_NAME'] = getenv('XHGUI_CLIENT_NAME') . '' . $_SERVER['SERVER_NAME'];
         $data['meta'] = array(
             'url' => $uri,
             'SERVER' => $_SERVER,
@@ -205,7 +208,7 @@ register_shutdown_function(
         );
 
         try {
-            // error_log(json_encode($data),3,'/var/xhprof/log/xhprof.log');
+            //error_log(json_encode($data), 3, '/var/xhprof/log/xhprof.log');
 
             $result = $saverHandler($data);
             // hLog("saver result: ".json_encode($result));

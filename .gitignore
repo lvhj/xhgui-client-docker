@@ -1,2 +1,4 @@
 .idea
 ./xhprof/log/*
+/xhprof/log/xhprof.log
+/xhprof/log/error.log
