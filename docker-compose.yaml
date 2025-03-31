@@ -9,18 +9,17 @@ services:
       - XHGUI_CONFIG_EXTENSION=tideways_xhprof
       - XHGUI_CONFIG_PERCENT=100
       - XHGUI_CONFIG_MODE=1
-      - XHGUI_CONFIG_SAVER_URL=http://192.168.55.25:8143/run/import # xhGui服务端代码
-      - XHGUI_UPLOAD_TOKEN=zw2025
-      - XHGUI_CLIENT_NAME=lvhj
+      - XHGUI_CONFIG_SAVER_URL=http://192.168.55.25:8143/run/import # xhGui服务端接口
+      - XHGUI_UPLOAD_TOKEN=zw2025                                   # xhGui服务端接口秘钥
+      - XHGUI_CLIENT_NAME=lvhj                                      # 客户端标识;修改为自定义名称(配置项)
 
     volumes:
       - ./etc/nginx:/etc/nginx/conf.d
       - ./xhprof:/var/xhprof
-      - /Volumes/work/code/php/zhangwan/zhangshi:/var/www # 项目代码 需要修改
+      - /Volumes/work/code/php/zhangwan/zhangshi:/var/www            # 项目代码-需要修改为本地代码路径(配置项)
     restart: always
     ports:
-      - "8082:80"
-      - "8083:8083"
+      - "8082:80"   # 开放端口(配置项)
     networks:
       - my-network  # 使用外部网络
 networks:

@@ -9,8 +9,8 @@ function hConfig($key)
 function hLog($content)
 {
     global $is_debug;
-    if (true) {
-        error_log(date('Y-m-d H:i:s') . ' - ' . $content . PHP_EOL, 3, '/var/xhprof/log/error.log');
+    if (true) { // 关闭错误日志
+        // error_log(date('Y-m-d H:i:s') . ' - ' . $content . PHP_EOL, 3, '/var/xhprof/log/error.log');
     }
 }
 

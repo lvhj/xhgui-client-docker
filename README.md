@@ -1,18 +1,23 @@
 # 使用说明
 
-## FPM
-### 修改本地项目代码
-    - /Volumes/work/code/php/zhangwan/zhangshi:/var/www # 替换项目代码
+## 使用方法
 
-### 一键启动
-    docker-compose up -d
+1.修改docker-composer 文件中标注配置项的部分。  
+2.执行命令 docker-compose up -d     
+3.发起本地网络请求，打开 http://47.98.45.200:8142 找到对应接口性能分析。
 
-### xhGui服务端地址(默认地址，无须变动)
-    - XHGUI_CONFIG_SAVER_URL=http://47.98.45.200:8142/run/import
+## FPM模式
 
+参考使用方法
 
-## CLI
+## CLI模式
+
 ### 参考
+
 https://github.com/perftools/php-profiler
+
+
+
+
 
 
